@@ -1,2 +1,2 @@
 # ImpactOne
-CSR and ESG Project Management and Analytics Platform
+CSR and ESG Project Management Tool and Analytics Platform
