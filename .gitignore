@@ -49,3 +49,7 @@ model-server/app/
 # Miscellaneous
 *.swp
 *.swo
+
+# Ignore private keys and certificates
+private.key
+certificate.crt
