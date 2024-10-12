@@ -1,6 +1,6 @@
 import { InferSchemaType, model, Schema } from "mongoose";
 
-var survey=new Schema({
+var surveyModel=new Schema({
         title:{type:String,required:true},
         description:{type:String,required:true},
         createdBy:{type:Schema.Types.ObjectId,required:true,ref:'user'},
@@ -22,6 +22,6 @@ var survey=new Schema({
     }
 )
 
-type surveyType=InferSchemaType<typeof survey>
+type surveyModelType=InferSchemaType<typeof surveyModel>
 
-export default model<surveyType>("survey",survey)
+export default model<surveyModelType>("surveyModel",surveyModel)
