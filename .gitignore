@@ -51,5 +51,7 @@ model-server/app/
 *.swo
 
 # Ignore private keys and certificates
+certs/
 private.key
 certificate.crt
+request.csr
