@@ -18,4 +18,7 @@ export default cleanEnv(process.env,{
     SESSION_SECRET:str(),
     JWT_SECRET:str(),
     CSRF_SECRET:str(),
+    GOOGLE_CLIENT_ID:str(),
+    GOOGLE_CLIENT_SECRET:str(),
+    GOOGLE_CALLBACK_URL:str(),
 })

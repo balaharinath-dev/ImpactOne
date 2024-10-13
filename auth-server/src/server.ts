@@ -4,7 +4,7 @@ import fs from "fs"
 import path from "path"
 import env from "./utils/cleanEnv"
 import mongoose from "mongoose"
-import mysql from "mysql2"
+import mysql from "mysql2/promise"
 import { httpApp, mainApp } from "./app"
 
 const httpServer=http.createServer(httpApp)
@@ -20,21 +20,21 @@ const credentials={
 
 const mainServer=https.createServer(credentials,mainApp)
 
-const mysqlConnection=mysql.createConnection({
-    host:env.MYSQL_DB_HOST,
-    user:env.MYSQL_DB_USER,
-    password:env.MYSQL_DB_PASSWORD,
-    database:env.MYSQL_DB_NAME,
-})
+export const createMysqlConnection = async()=>{
+    return mysql.createConnection({
+        host: env.MYSQL_DB_HOST,
+        user: env.MYSQL_DB_USER,
+        password: env.MYSQL_DB_PASSWORD,
+        database: env.MYSQL_DB_NAME,
+    })
+}
 
 mongoose.connect(env.MONGO_CONNECTION_STRING)
-.then(()=>{
+.then(async()=>{
     console.log("MongoDB Atlas connected successfully")
 
-    mysqlConnection.connect((err)=>{
-        if(err) console.log("Error connecting to MySQL Server")
-        else console.log("MySQL Server connected successfully")
-    })
+    const mysqlConnection = await createMysqlConnection()
+    if(mysqlConnection) console.log("MySQL Server connected successfully")
 
     httpServer.listen(env.HTTPAPP_PORT,()=>{
         console.log(`HTTP server listening at port ${env.HTTPAPP_PORT}`)
