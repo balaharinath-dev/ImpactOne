@@ -3,14 +3,10 @@ import env from "../../../main-server/src/utils/cleanEnv"
 import jwt, { decode } from "jsonwebtoken"
 
 export const authMiddleware=(req:Request,res:Response,next:NextFunction)=>{
-    console.log(req.headers)
-    if(!req.session.userId) return res.status(401).json({message:"Unauthorized access (Session ID)"})
+    if(!req.session.userId||req.session.type!=="user") return res.status(401).json({message:"Unauthorized access"})
     
     const tokenFromClient=req.cookies["ImpactOne-CSRF-Token"]
     const storedToken=req.session.csrfToken
-
-    console.log(tokenFromClient)
-    console.log(storedToken)
 
     if(!storedToken||storedToken!==tokenFromClient) return res.status(401).json({error:"CSRF Token invalidity"})
 

@@ -9,5 +9,6 @@ export default session({
     cookie:{
         httpOnly:true,
         secure:true,
+        sameSite:"strict",
     },
 })

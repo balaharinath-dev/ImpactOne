@@ -7,8 +7,7 @@ import cookieParser from "cookie-parser"
 import morgan from "morgan"
 import authRouter from "./routes/authRouter"
 import passport from "passport"
-import env from "./utils/cleanEnv"
-import { Strategy as GoogleStrategy } from "passport-google-oauth20"
+import { googleStrategy } from "./middlewares/googleMiddlwares"
 
 export const httpApp=express()
 export const mainApp=express()
@@ -35,22 +34,15 @@ mainApp.use(sessionMiddleware)
 mainApp.use(express.json())
 
 mainApp.use(passport.initialize())
+
 mainApp.use(passport.session())
 
-passport.use(new GoogleStrategy({
-    clientID:env.GOOGLE_CLIENT_ID,
-    clientSecret:env.GOOGLE_CLIENT_SECRET,
-    callbackURL:env.GOOGLE_CLIENT_SECRET,
-  },
-  (accessToken,refreshToken,profile,done)=>{
-    return done(null,profile)
-}))
+passport.use(googleStrategy)
 
 passport.serializeUser((user,done)=>{
     done(null,user)
 })
-  
-  // Deserialize user
+
 passport.deserializeUser((obj:any,done)=>{
     done(null,obj)
 })

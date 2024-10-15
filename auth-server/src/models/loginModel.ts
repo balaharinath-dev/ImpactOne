@@ -1,8 +1,9 @@
 export interface loginModel{
-    id?:string,
+    id:string,
     username:string,
-    password?:string,
+    password:string,
     roleName:string,
-    createdAt?:Date,
-    updatedAt?:Date,
+    picture:Blob,
+    createdAt:Date,
+    updatedAt:Date,
 }

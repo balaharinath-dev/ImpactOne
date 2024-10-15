@@ -1,9 +1,7 @@
 import { NextFunction, RequestHandler, Request, Response } from "express";
 import { loginModel } from "../models/loginModel";
-import { checkCredentials } from "../services/authService";
-import crypto from "crypto"
-import env from "../../../main-server/src/utils/cleanEnv"
-import jwt from "jsonwebtoken";
+import { checkCredentials, checkOAuthUser, checkUserExists, createCredentials } from "../services/authService";
+import { createAuthVar } from "../services/authService";
 
 export const login:RequestHandler=async(req:Request,res:Response,next:NextFunction)=>{
     const credentials:loginModel=req.body
@@ -12,36 +10,7 @@ export const login:RequestHandler=async(req:Request,res:Response,next:NextFuncti
         const credentialsResponse=await checkCredentials(credentials)
 
         if(credentialsResponse.status===200){
-            req.session.userId=credentialsResponse.details?.id
-            
-            const csrfToken=crypto.createHmac("sha256",env.CSRF_SECRET).update(crypto.randomBytes(64)).digest("hex")
-            
-            req.session.csrfToken=csrfToken
-
-            res.cookie("ImpactOne-CSRF-Token",csrfToken,{
-                httpOnly:true,
-                secure:true,
-                maxAge:24*60*60*1000,
-                sameSite:"strict"
-            })
-
-            const header={
-                alg:'HS256',
-                typ:'JWT'
-              }
-              
-            const payload = {
-                userId:credentialsResponse.details?.id,
-                iat:Math.floor(Date.now()/1000),
-                exp:Math.floor(Date.now()/1000)+(24*60*60)
-            }
-
-            res.cookie("ImpactOne-JWT-Token",jwt.sign(payload,env.JWT_SECRET,{header}),{
-                httpOnly:true,
-                secure:true,
-                maxAge:24*60*60*1000,
-                sameSite:"strict"
-            })
+            createAuthVar(req,res,credentialsResponse.details?.id||"","user")
         }
         
         res.status(credentialsResponse.status).json({"response":credentialsResponse.message})
@@ -50,3 +19,39 @@ export const login:RequestHandler=async(req:Request,res:Response,next:NextFuncti
         next(error)
     }
 }
+
+export const googleCallback:RequestHandler=async(req:Request,res:Response,next:NextFunction)=>{
+    const googleProfile=req.user?._json
+    console.log(googleProfile)
+
+    try{
+        const userCheck=await checkOAuthUser(googleProfile)
+
+        if(userCheck.status==200){
+             createAuthVar(req,res,googleProfile?.sub||"","user")
+
+            return res.json({"status":userCheck.status,"response":userCheck.message})
+        }
+        else{
+            createAuthVar(req,res,googleProfile?.sub||"","registerGoogle")
+
+            res.json({"status":userCheck.status,"response":userCheck.message,"details":googleProfile})
+        }
+    }
+    catch(error){
+        next(error)
+    }
+}
+
+export const googleNewUser:RequestHandler=async(req:Request,res:Response,next:NextFunction)=>{
+    const credentials:loginModel=req.body
+
+    try{
+        await createCredentials(credentials)
+        res.json({"status":200,"message":"User created"})
+    }
+    catch(error){
+        next(error)
+    }
+}
+
