@@ -10,7 +10,9 @@ declare module "express-session" {
     interface SessionData {
       userId:string,
       csrfToken:string,
-      type:string
+      type:string,
+      otp:string,
+      optSecret:string,
     }
   }
 declare global{
@@ -32,9 +34,18 @@ authRouter.get("/google",loginLimiter,googleAuth)
 
 authRouter.get("/google/callback",googleCallback,authControllers.googleCallback,authControllers.googleNewUser)
 
+authRouter.post("/google/new",authControllers.googleNewUser)
+
+authRouter.post("/signup",authControllers.googleNewUser)
+
+authRouter.post("/new",authControllers.googleNewUser)
+
+authRouter.post("/logout",authControllers.googleNewUser)
+
 authRouter.get("/home",authMiddleware,(req,res,next)=>{
     try{
-        res.json({message:"Home"})
+      console.log("Hello")
+      res.json({message:req.session.id})
     }
     catch(error){
         next(error)
@@ -43,7 +54,7 @@ authRouter.get("/home",authMiddleware,(req,res,next)=>{
 
 authRouter.get("/googlehome",authMiddleware,(req,res,next)=>{
     try{
-        res.json({message:"Google home"})
+        res.json({message:req.session.userId})
     }
     catch(error){
         next(error)

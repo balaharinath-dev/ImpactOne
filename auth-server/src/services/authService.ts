@@ -5,8 +5,16 @@ import crypto from "crypto"
 import env from "../../../main-server/src/utils/cleanEnv"
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express"
+import { authenticator } from "otplib"
 
-export const checkUserExists=async(username:string)=>{
+const generateOTP=()=>{
+    const optSecret=authenticator.generateSecret()
+    const otpValue=authenticator.generate(optSecret)
+
+    return {optSecret,otpValue}
+}
+
+const checkUserExists=async(username:string)=>{
     const connection=await createMysqlConnection()
 
     const [rows]=await connection.query<any[]>(`
@@ -43,8 +51,9 @@ export const checkOAuthUser=async(profile:any)=>{
     else return {status:200,message:"Logged in with Google successfully"}
 }
 
-export const createCredentials=async(credentials:loginModel)=>{
 
+
+export const createNewUser=async(credentials:loginModel,type:boolean)=>{
     const connection=await createMysqlConnection()
 
     const [rows]=await connection.query<any[]>(`
@@ -59,15 +68,13 @@ export const createCredentials=async(credentials:loginModel)=>{
 
         const sql='INSERT INTO users (id, username, password, role, photo) VALUES (?, ?, ?, ?, ?)'
 
-        const [result] = await connection.query(sql,[credentials.id,credentials.username,credentials.password,roleId,credentials.picture])
+        const [result] = await connection.query(sql,[type?credentials.id:null,credentials.username,credentials.password,roleId,credentials.picture])
 
-        return {status:200,message:"New Google user created"}
+        return {status:200,message:"New user created"}
     }
 
     await connection.end()
 }
-
-
 
 export const createAuthVar=(req:Request,res:Response,id:string,type:string)=>{
     req.session.userId=id
@@ -101,4 +108,24 @@ export const createAuthVar=(req:Request,res:Response,id:string,type:string)=>{
         maxAge:24*60*60*1000,
         sameSite:"strict"
     })
+}
+
+export const checkNewUser=async(username:string)=>{
+    const rows=checkUserExists(username)
+
+    if(!rows){
+        const otp=generateOTP()
+        return {status:202,message:"OTP sent",details:otp}
+    }
+    else{
+        return {status:400,message:"Username already exists"}
+    }
+}
+
+export const sendOTP=async(otpValue:string)=>{
+    return {status:400,message:"Username already exists"}
+}
+
+export const verifyOTPValue=async(otpValue:string)=>{
+    return {status:400,message:"Username already exists"}
 }
