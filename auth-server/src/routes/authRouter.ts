@@ -45,7 +45,7 @@ authRouter.post("/logout",authControllers.googleNewUser)
 authRouter.get("/home",authMiddleware,(req,res,next)=>{
     try{
       console.log("Hello")
-      res.json({message:req.session.id})
+      res.json({message:"Authorized user!"})
     }
     catch(error){
         next(error)
